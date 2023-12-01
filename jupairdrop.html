@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Request Example</title>
+    <title>JUP AIRDROP CHECKER by hutsnabil</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -70,66 +70,70 @@
 </head>
 
 <body>
-    <h1>API Request Example</h1>
+    <h1>JUP AIRDROP CHECK by hutsnabil</h1>
 
     <label for="customInput">Enter Wallets (one per line):</label>
     <textarea id="customInput" placeholder="Wallet 1
 Wallet 2
-Wallet 3"></textarea>
+Wallet 3" style="min-height: 20vh;"></textarea>
 
-    <button onclick="makeApiRequest()">JUP AIDROP CHECKER</button>
+    <button onclick="makeApiRequest()">Check Wallets</button>
 
     <div id="responseContainer"></div>
 
     <script>
         async function makeApiRequest() {
-    var customValues = document.getElementById("customInput").value.split("\n");
-    var responseContainer = document.getElementById("responseContainer");
+            var customValues = document.getElementById("customInput").value.split("\n");
+            var responseContainer = document.getElementById("responseContainer");
 
-    // Clear previous queries
-    responseContainer.innerHTML = "";
+            // Clear previous queries
+            responseContainer.innerHTML = "";
 
-    for (var i = 0; i < customValues.length; i++) {
-        var lowercaseValue = customValues[i].trim().toLowerCase();
-        if (lowercaseValue) { // Skip empty lines
-            try {
-                let response = await fetch("https://jup-airdrop.zhen8558.workers.dev/allocation/" + lowercaseValue);
+            for (var i = 0; i < customValues.length; i++) {
+                var lowercaseValue = customValues[i].trim().toLowerCase();
+                if (lowercaseValue) { // Skip empty lines
+                    try {
+                        let response = await fetch("https://jup-airdrop.zhen8558.workers.dev/allocation/" + lowercaseValue);
 
-                if (response.ok) {
-                    let responseData = await response.json();
-                    displayResponse(responseData, responseContainer);
-                } else {
-                    console.error("Error: " + response.status);
-                    displayError(responseContainer, "Failed to fetch data", lowercaseValue);
+                        if (response.ok) {
+                            let responseData = await response.json();
+                            displayResponse(responseData, responseContainer);
+                        } else {
+                            console.error("Error: " + response.status);
+                            displayError(responseContainer, "Failed to fetch data", lowercaseValue);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching data:", error);
+                        displayError(responseContainer, "Failed to fetch data", lowercaseValue);
+                    }
                 }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                displayError(responseContainer, "Failed to fetch data", lowercaseValue);
             }
         }
-    }
-}
-
 
         function displayResponse(response, container) {
             if (!response) {
                 displayError(container, "Wallet not found or not eligible for the airdrop");
             } else {
                 // Extract and display desired values
+                var owner = response.owner || "N/A";
+                // Shorten the displayed owner address
+                var shortenedOwner = shortenAddress(owner);
                 var tokensFinal = response.tokens_final || "N/A";
                 var tokensTier = response.tokens_tier || "N/A";
                 var tokensOgBonus = response.tokens_og_bonus || "N/A";
                 var tokensWelcome = response.tokens_welcome || "N/A";
                 var tier = response.tier || "N/A";
-                var score = response.score || "N/A";
-                var volume = response.volume || "N/A";
+                var score = Math.round(response.score) || "N/A";
+                var volume = Math.round(response.volume) || "N/A";
+                
 
-                if (tokensFinal === "N/A" && tokensTier === "N/A" && tokensOgBonus === "N/A" &&
+                if (owner === "N/A" && tokensFinal === "N/A" && tokensTier === "N/A" && tokensOgBonus === "N/A" &&
                     tokensWelcome === "N/A" && tier === "N/A" && score === "N/A" && volume === "N/A") {
                     displayError(container, "Wallet not found or not eligible for the airdrop");
                 } else {
                     var formattedResponse = `
                         <div class="walletInfo">
+                            <p>Wallet: ${shortenedOwner}</p>
                             <p>Tokens Final: ${tokensFinal}</p>
                             <p>Tokens Tier: ${tokensTier}</p>
                             <p>Tokens OG Bonus: ${tokensOgBonus}</p>
@@ -147,13 +151,21 @@ Wallet 3"></textarea>
         }
 
         function displayError(container, errorMessage, wallet) {
-    if (wallet) {
-        container.innerHTML += `<div class="error">Wallet not found: ${wallet}</div><hr>`;
-    } else {
-        container.innerHTML += `<div class="error">${errorMessage}</div><hr>`;
-    }
-}
+            if (wallet) {
+                container.innerHTML += `<div class="error">Wallet not found: ${wallet}</div><hr>`;
+            } else {
+                container.innerHTML += `<div class="error">${errorMessage}</div><hr>`;
+            }
+        }
 
+        function shortenAddress(address) {
+            // Display the first 6 characters and the last 6 characters of the address
+            if (address.length > 12) {
+                return address.substring(0, 6) + "..." + address.slice(-6);
+            } else {
+                return address; // Return the original address if it's too short
+            }
+        }
     </script>
 </body>
 
